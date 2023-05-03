@@ -27,7 +27,10 @@ void mx_print_less_info(List *list, char *dir, char *flags) {
                     mx_printchar('/');
                     g = 1;
                 }
-                for (int x = 0; x < max_len - mx_strlen(temp->data) - g; x++) mx_printstr(" ");
+                if (isatty(STDOUT_FILENO)) {
+                    for (int x = 0; x < max_len - mx_strlen(temp->data) - g; x++) mx_printstr(" ");
+                }
+                // else printf ("Its a pipe.\n");
             }
 
         }

@@ -78,8 +78,6 @@ int mx_get_total(List *files, char *dir) {
     return blocks_count;
 }
 
-#define SIX_MONTHS_AGO (time(NULL) - (60 * 60 * 24 * 30 * 6))
-
 void mx_print_full_info(List *files, char *dir, char *flags) {
     struct stat buf;
     struct passwd *user_name;
@@ -115,7 +113,7 @@ void mx_print_full_info(List *files, char *dir, char *flags) {
         mx_printstr(" ");
         mx_printstr(user_name->pw_name);
         if (mx_strchr(flags, 'o') == 0) {
-             mx_printstr("  ");
+            mx_printstr("  ");
             mx_printstr(group_name->gr_name);
         }
         mx_printstr("  ");
@@ -127,10 +125,12 @@ void mx_print_full_info(List *files, char *dir, char *flags) {
         mx_printint((int)buf.st_size);
         mx_printstr(" ");
         for (int t = 4; t < mx_strlen(str_time) - 15; t++) mx_printchar(str_time[t]);
-        if (difftime(buf.st_ctime, SIX_MONTHS_AGO) > 0)
+        if (15811200 > (time(NULL) - buf.st_ctime))
             for (int t = 10; t < mx_strlen(str_time) - 9; t++) mx_printchar(str_time[t]);
-        else
+        else {
+            mx_printstr(" ");
             for (int t = 19; t < mx_strlen(str_time) - 1; t++) mx_printchar(str_time[t]);
+        }
         mx_printstr(" ");
         mx_printstr(temp->data);
         if (is_p && mx_is_dir(mx_get_full_path(temp->data, dir))) mx_printchar('/');

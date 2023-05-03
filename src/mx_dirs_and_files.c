@@ -1,7 +1,5 @@
 #include "../inc/uls.h"
 
-// #include <stdio.h>
-
 void mx_sort_by_flag(List **list, char *flags, char *dir) {
     if (mx_strchr(flags, 'f') != 0) return;
     if (mx_strchr(flags, 'S') != 0) mx_sort_by_size(list, dir);
@@ -9,9 +7,32 @@ void mx_sort_by_flag(List **list, char *flags, char *dir) {
     if (mx_strchr(flags, 'r') != 0) mx_reverse_list(list);
 }
 
+char* get_filename(char* path) {
+    char* last_slash = NULL;
+    char* current_char = path;
+
+    while (*current_char) {
+        if (*current_char == '/') last_slash = current_char;
+        current_char++;
+    }
+    if (last_slash) return last_slash + 1;
+    return path;
+}
+
+void mx_print_error(char *filename) {
+    mx_printstr("uls: ");
+    char *t1 = get_filename(filename);
+    if (t1) mx_printstr(t1);
+    else    mx_printstr(filename);
+    mx_printstr(": ");
+    if (errno == EACCES) mx_printstr("Permission denied");
+    mx_printstr("\n");
+}
+
 List *mx_get_files_from_dir(char *directory, char *flags) {
     struct dirent *dent;
     DIR *dir = opendir(directory);
+    if (dir == NULL) return NULL;
     List *files = NULL;
 
     while ((dent = readdir(dir)) != NULL)
@@ -40,6 +61,10 @@ void mx_print_files(List *files, char *flags, char *dir) {
 
 void mx_print_extra_dir(char *dir, char *flags) {
     List *x_data = mx_get_files_from_dir(dir, flags);
+    if (x_data == NULL) {
+        mx_print_error(dir); 
+        return;
+    }
     List *x_dirs = NULL;
     List *temp = x_data;
     struct stat buf;
@@ -72,6 +97,11 @@ void mx_print_dir(List *dirs, char *flags, bool only_dir) {
         if (!only_dir || !(temp->data == dirs->data) || temp->next) {
             mx_printstr(temp->data);
             mx_printstr(":\n");
+        }
+        if (temp_files == NULL) {
+            mx_print_error(temp->data);
+            temp = temp->next;
+            continue;
         }
         mx_print_files(temp_files, flags, temp->data);
         if (mx_strchr(flags, 'R') != 0) mx_print_extra_dir(temp->data, flags);
